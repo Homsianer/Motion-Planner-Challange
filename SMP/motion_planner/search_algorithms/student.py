@@ -70,15 +70,20 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         # regressing node can't dominate the weighted sum
         dist_manhattan_norm = min(dist_manhattan_norm, self.DIST_MANHATTAN_NORM_CAP)
 
-        final_lanelet_id = self.scenario.lanelet_network.find_lanelet_by_position(
+        # find_lanelet_by_position([pos]) returns a list PER QUERIED POSITION
+        # (we query one), so [0] gets that position's list of candidate
+        # lanelet ids - it can be empty if the state isn't inside any lanelet.
+        final_lanelet_ids = self.scenario.lanelet_network.find_lanelet_by_position(
             [path_last[-1].position]
-        )
+        )[0]
 
-        if final_lanelet_id[0] is None:
+        if not final_lanelet_ids:
             return np.inf
 
+        final_lanelet_id = final_lanelet_ids[0]
+
         # hard discard if the goal lanelet cannot be reached from here
-        cost_lanelet_graph = self.dict_lanelets_costs[final_lanelet_id[0]]
+        cost_lanelet_graph = self.dict_lanelets_costs[final_lanelet_id]
         if cost_lanelet_graph == -1:
             return np.inf
 
@@ -103,7 +108,7 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         # 1/x could otherwise blow up to arbitrary size right next to an
         # obstacle and dominate the sum regardless of its weight.
         dist_closest_obstacle = self.calc_dist_to_closest_obstacle(
-            final_lanelet_id[0], path_last[-1].position, path_last[-1].time_step
+            final_lanelet_id, path_last[-1].position, path_last[-1].time_step
         )
         if np.isinf(dist_closest_obstacle):
             cost_obstacle = 0.0

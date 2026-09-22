@@ -178,6 +178,11 @@ def main():
         "timeout (e.g. via batch_processing_sequential.py) before trusting them."
     )
 
+    # returned (instead of only printed) so a Jupyter notebook can capture it,
+    # e.g. `study = main()`, and inspect/plot it further with
+    # optuna.visualization.plot_optimization_history(study) etc.
+    return study
+
 
 if __name__ == "__main__":
     main()
