@@ -15,7 +15,7 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
     """
 
 
-    DEFAULT_WEIGHTS = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+    DEFAULT_WEIGHTS = np.array([0.1, 1.0, 1.0, 1.0, 1.0, 1.0])
 
     # radius (in meters) beyond which a nearby obstacle no longer affects the
     # obstacle term - keeps it bounded to [0, 1] instead of the old 1/x, which
