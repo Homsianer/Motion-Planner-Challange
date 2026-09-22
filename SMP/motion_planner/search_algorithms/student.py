@@ -3,6 +3,7 @@ import time
 from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
+from commonroad.geometry.shape import Circle
 from commonroad.scenario.state import KSState
 
 import SMP.batch_processing.timeout_config
@@ -94,10 +95,57 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         self.weights = np.array(self.DEFAULT_WEIGHTS, dtype=float)
         self._num_heuristic_calls = 0
         self._search_start_time = None
+        # caches the (expensive) obstacle lookup keyed on (lanelet_id,
+        # time_step) - see _get_circle_obstacle_centers_in_lanelet() below
+        self._obstacle_centers_cache = {}
 
     def evaluation_function(self, node_current: PriorityNode) -> float:
         node_current.priority = self.heuristic_function(node_current=node_current)
         return node_current.priority
+
+    def _get_circle_obstacle_centers_in_lanelet(self, lanelet_id, time_step):
+        """
+        Cached replacement for the obstacle lookup inside
+        SearchBaseClass.calc_dist_to_closest_obstacle(): scanning every
+        obstacle in the whole scenario and checking lanelet containment
+        (get_obstacles() in base_class.py) is the expensive part, and it
+        only depends on (lanelet_id, time_step) - NOT on the querying
+        position - so many nodes (e.g. siblings from the same parent, which
+        share the same time_step, or nodes the closed list didn't merge but
+        that still end up in the same lanelet) can reuse this instead of
+        re-scanning from scratch on every single heuristic call.
+        """
+        cache_key = (lanelet_id, time_step)
+        cached = self._obstacle_centers_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
+        lanelet_obj = self.scenario.lanelet_network.find_lanelet_by_id(lanelet_id)
+        obstacles_in_lanelet = self.get_obstacles(lanelet_obj, time_step)
+        # same restriction as the original calc_dist_to_closest_obstacle:
+        # only Circle-shaped obstacles are considered
+        centers = [
+            obstacle.occupancy_at_time(time_step).shape.center
+            for obstacle in obstacles_in_lanelet
+            if isinstance(obstacle.occupancy_at_time(time_step).shape, Circle)
+        ]
+        self._obstacle_centers_cache[cache_key] = centers
+        return centers
+
+    def calc_dist_to_closest_obstacle(self, lanelet_id, pos, time_step):
+        """
+        Same result as SearchBaseClass.calc_dist_to_closest_obstacle(), but
+        via the cached lookup above - only the (cheap) distance-to-pos loop
+        over the cached centers is redone per node, not the expensive
+        whole-scenario obstacle scan.
+        """
+        centers = self._get_circle_obstacle_centers_in_lanelet(lanelet_id, time_step)
+        shortest_dist = np.inf
+        for center in centers:
+            dist = self.distance(pos, center)
+            if dist < shortest_dist:
+                shortest_dist = dist
+        return shortest_dist
 
     def heuristic_function(self, node_current: PriorityNode) -> float:
         if self.DEBUG_LOG_PROGRESS:
@@ -117,6 +165,16 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
 
         dist_manhattan = self.calc_heuristic_distance(path_last[-1], distance_type=1)
         if dist_manhattan is None:
+            return np.inf
+
+
+        dist_manhattan_before_primitive = self.calc_heuristic_distance(
+            path_last[0], distance_type=1
+        )
+        if (
+            dist_manhattan_before_primitive is not None
+            and dist_manhattan > dist_manhattan_before_primitive
+        ):
             return np.inf
 
         # normalize by the distance at the very start of the search, so this
@@ -164,15 +222,11 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         # already bounded to [0, 1]
         orientation_diff_norm = abs(orientationToGoalDiff) / np.pi
 
-        # penalize proximity to the closest obstacle in the current lanelet
-        # instead of just counting obstacles, so a close obstacle costs more
-        # than a far one, and no obstacle at all costs nothing. Saturating
-        # (instead of 1/x) keeps this bounded to [0, 1] like the other terms -
-        # 1/x could otherwise blow up to arbitrary size right next to an
-        # obstacle and dominate the sum regardless of its weight.
+
         dist_closest_obstacle = self.calc_dist_to_closest_obstacle(
             final_lanelet_id, path_last[-1].position, path_last[-1].time_step
         )
+
         if np.isinf(dist_closest_obstacle):
             cost_obstacle = 0.0
         else:
