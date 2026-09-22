@@ -12,6 +12,26 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
     Here as an example, the planner is inherited from the GreedyBestFirstSearch planner.
     """
 
+
+    DEFAULT_WEIGHTS = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+
+    # radius (in meters) beyond which a nearby obstacle no longer affects the
+    # obstacle term - keeps it bounded to [0, 1] instead of the old 1/x, which
+    # could blow up to arbitrarily large values right next to an obstacle
+    OBSTACLE_DANGER_RADIUS = 5.0
+
+    # fallback normalizer for the velocity term when the goal's own max
+    # velocity is 0 (e.g. "come to a stop") - see heuristic_function() below
+    NOMINAL_VELOCITY_SCALE = 10.0
+
+    # caps for terms that aren't naturally bounded to ~[0, 1] (e.g. a node
+    # moving away from the goal, or the search running past the goal's time
+    # window) - without this a single outlier node could dominate the sum
+    # regardless of its weight
+    DIST_MANHATTAN_NORM_CAP = 2.0
+    DIST_VEL_NORM_CAP = 2.0
+    COST_TIME_NORM_CAP = 2.0
+
     def __init__(
         self, scenario, planningProblem, automata, plot_config=DefaultPlotConfig
     ):
@@ -21,8 +41,9 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
             automaton=automata,
             plot_config=plot_config,
         )
-
-
+        # instance copy so a tuning script can do `planner.weights = ...`
+        # without mutating the class-level default for other instances
+        self.weights = np.array(self.DEFAULT_WEIGHTS, dtype=float)
 
     def evaluation_function(self, node_current: PriorityNode) -> float:
         node_current.priority = self.heuristic_function(node_current=node_current)
@@ -36,19 +57,18 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         if dist_manhattan is None:
             return np.inf
 
-        # NOTE: GreedyBestFirstSearch's evaluation_function is f(n) = h(n) only,
-        # there is no g(n) accumulated over the path (see best_first_search.py).
-        # So this heuristic is the only thing guiding the search, and nothing
-        # here currently stops it from regressing/oscillating - it would make
-        # sense to also penalize (not necessarily hard-discard) nodes whose
-        # dist_manhattan increased compared to the state before this primitive.
-
         # normalize by the distance at the very start of the search, so this
         # term is roughly a "fraction of the trip left" instead of raw meters
         dist_manhattan_start = self.calc_heuristic_distance(
             initial_state, distance_type=1
         )
-        dist_manhattan_norm = dist_manhattan / dist_manhattan_start if dist_manhattan_start else dist_manhattan
+        if dist_manhattan_start is not None and dist_manhattan_start > 0:
+            dist_manhattan_norm = dist_manhattan / dist_manhattan_start
+        else:
+            dist_manhattan_norm = dist_manhattan
+        # moving away from the goal can push this above 1 - cap it so one
+        # regressing node can't dominate the weighted sum
+        dist_manhattan_norm = min(dist_manhattan_norm, self.DIST_MANHATTAN_NORM_CAP)
 
         final_lanelet_id = self.scenario.lanelet_network.find_lanelet_by_position(
             [path_last[-1].position]
@@ -78,14 +98,19 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
 
         # penalize proximity to the closest obstacle in the current lanelet
         # instead of just counting obstacles, so a close obstacle costs more
-        # than a far one, and no obstacle at all costs nothing
+        # than a far one, and no obstacle at all costs nothing. Saturating
+        # (instead of 1/x) keeps this bounded to [0, 1] like the other terms -
+        # 1/x could otherwise blow up to arbitrary size right next to an
+        # obstacle and dominate the sum regardless of its weight.
         dist_closest_obstacle = self.calc_dist_to_closest_obstacle(
             final_lanelet_id[0], path_last[-1].position, path_last[-1].time_step
         )
         if np.isinf(dist_closest_obstacle):
             cost_obstacle = 0.0
         else:
-            cost_obstacle = 1.0 / (dist_closest_obstacle + 1e-6)
+            cost_obstacle = max(
+                0.0, 1.0 - dist_closest_obstacle / self.OBSTACLE_DANGER_RADIUS
+            )
 
         # time cost of the whole trajectory so far (from the initial state),
         # not just of the last primitive
@@ -94,32 +119,34 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
             time_goal_max = self.planningProblem.goal.state_list[0].time_step.end
         else:
             time_goal_max = None
-        cost_time_norm = cost_time / time_goal_max if time_goal_max else cost_time #im else falls ggf nicht gut genormt
+
+        if time_goal_max is not None and time_goal_max > 0:
+            cost_time_norm = cost_time / time_goal_max
+        else:
+            cost_time_norm = cost_time
+        cost_time_norm = min(cost_time_norm, self.COST_TIME_NORM_CAP)
 
         if hasattr(self.planningProblem.goal.state_list[0], "velocity"):
             # target the upper bound of the goal's velocity interval: going
             # faster (up to the allowed max) is cheaper than going slower
             v_max_goal = self.planningProblem.goal.state_list[0].velocity.end
             dist_vel = abs(path_last[-1].velocity - v_max_goal)
-            dist_vel_norm = dist_vel / v_max_goal if v_max_goal else dist_vel ##im else falls ggf nicht gut genormt
+
+            if v_max_goal is not None and v_max_goal > 0:
+                v_scale = v_max_goal
+            else:
+                v_scale = self.NOMINAL_VELOCITY_SCALE
+            dist_vel_norm = min(dist_vel / v_scale, self.DIST_VEL_NORM_CAP)
         else:
             dist_vel_norm = 0
 
-        weights = np.zeros(6)
-        weights[0] = 1.0  # manhattan distance to goal (normalized)
-        weights[1] = 1.0  # velocity difference to goal's max velocity (normalized)
-        weights[2] = 1.0  # orientation difference to goal (normalized)
-        weights[3] = 1.0  # proximity to closest obstacle in current lanelet
-        weights[4] = 1.0  # time cost of trajectory so far (normalized)
-        weights[5] = 1.0  # lanelet-graph distance to goal lanelet (normalized)
-
         cost = (
-            weights[0] * dist_manhattan_norm
-            + weights[1] * dist_vel_norm
-            + weights[2] * orientation_diff_norm
-            + weights[3] * cost_obstacle
-            + weights[4] * cost_time_norm
-            + weights[5] * cost_lanelet_graph_norm
+            self.weights[0] * dist_manhattan_norm
+            + self.weights[1] * dist_vel_norm
+            + self.weights[2] * orientation_diff_norm
+            + self.weights[3] * cost_obstacle
+            + self.weights[4] * cost_time_norm
+            + self.weights[5] * cost_lanelet_graph_norm
         )
 
         if cost < 0:
