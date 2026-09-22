@@ -1,10 +1,20 @@
+import copy
 import time
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
-from SMP.motion_planner.node import PriorityNode
+from commonroad.scenario.state import KSState
 
+import SMP.batch_processing.timeout_config
+from SMP.maneuver_automaton.motion_primitive import MotionPrimitive
+from SMP.motion_planner.node import PriorityNode
 from SMP.motion_planner.plot_config import DefaultPlotConfig
 from SMP.motion_planner.search_algorithms.best_first_search import GreedyBestFirstSearch
+from SMP.motion_planner.utility import (
+    MotionPrimitiveStatus,
+    initial_visualization,
+    update_visualization,
+)
 
 
 class StudentMotionPlanner(GreedyBestFirstSearch):
@@ -15,7 +25,7 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
     """
 
 
-    DEFAULT_WEIGHTS = np.array([0.1, 1.0, 1.0, 1.0, 1.0, 1.0])
+    DEFAULT_WEIGHTS = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 
     # radius (in meters) beyond which a nearby obstacle no longer affects the
     # obstacle term - keeps it bounded to [0, 1] instead of the old 1/x, which
@@ -40,6 +50,35 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
     # to False before a real/graded batch run - it's not needed otherwise.
     DEBUG_LOG_PROGRESS = True
     DEBUG_LOG_EVERY_N = 2000
+
+    # GreedyBestFirstSearch (best_first_search.py) does a pure TREE search -
+    # no duplicate-state pruning at all - so it can re-explore practically
+    # identical states (reached via different primitive sequences) over and
+    # over, burning the whole search on wide, shallow branching instead of
+    # making depth progress (confirmed via DEBUG_LOG_PROGRESS: thousands of
+    # nodes evaluated while depth barely moves). execute_search() below adds
+    # a closed list keyed on a DISCRETIZED state to fix that. Grid fine
+    # enough to not merge genuinely different states, coarse enough to
+    # actually catch near-duplicates - these are the tunable knobs.
+    DEDUP_POSITION_RESOLUTION = 1.0  # meters
+    DEDUP_ORIENTATION_RESOLUTION = 0.15  # radians (~8.6 degrees)
+    DEDUP_VELOCITY_RESOLUTION = 1.0  # m/s
+
+    def _state_key(self, state):
+        """
+        Discretized key for a state, used to decide whether two states are
+        "practically the same" for search-pruning purposes. time_step is
+        NOT rasterized - it's already a discrete integer, and merging states
+        from different time steps would be wrong since obstacles move.
+        """
+        grid_pos = tuple(
+            np.round(state.position / self.DEDUP_POSITION_RESOLUTION).astype(int)
+        )
+        grid_orientation = int(
+            np.round(state.orientation / self.DEDUP_ORIENTATION_RESOLUTION)
+        )
+        grid_velocity = int(np.round(state.velocity / self.DEDUP_VELOCITY_RESOLUTION))
+        return (state.time_step, grid_pos, grid_orientation, grid_velocity)
 
     def __init__(
         self, scenario, planningProblem, automata, plot_config=DefaultPlotConfig
@@ -181,4 +220,167 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         if cost < 0:
             cost = 0
         return cost
+
+    def execute_search(
+        self,
+    ) -> Tuple[
+        Union[None, List[List[KSState]]], Union[None, List[MotionPrimitive]], Any
+    ]:
+        """
+        Same as BestFirstSearch.execute_search() (best_first_search.py), but
+        with a closed list added: a node whose (discretized) state was
+        already expanded before is skipped instead of being re-expanded, and
+        a child leading to an already-expanded state is never even inserted
+        into the frontier. See the comment above DEDUP_POSITION_RESOLUTION
+        for why this is needed.
+        """
+        # fresh per search run
+        self._closed_states = set()
+
+        # for visualization in jupyter notebook
+        list_status_nodes = []
+        dict_status_nodes: Dict[int, Tuple] = {}
+
+        # shift initial state of planning problem from vehicle center to rear axle position
+        # (reference point of motion primitives)
+        new_state_initial = self.state_initial.translate_rotate(
+            -np.array(
+                [
+                    self.rear_ax_dist * np.cos(self.state_initial.orientation),
+                    self.rear_ax_dist * np.sin(self.state_initial.orientation),
+                ]
+            ),
+            0,
+        )
+
+        # first node
+        node_initial = PriorityNode(
+            list_paths=[[new_state_initial]],
+            list_primitives=[self.motion_primitive_initial],
+            depth_tree=0,
+            priority=0,
+        )
+        initial_visualization(
+            self.scenario,
+            self.state_initial,
+            self.shape_ego,
+            self.planningProblem,
+            self.config_plot,
+            self.path_fig,
+        )
+
+        # add current node (i.e., current path and primitives) to the frontier
+        f_initial = self.evaluation_function(node_initial)
+        self.frontier.insert(item=node_initial, priority=f_initial)
+
+        dict_status_nodes = update_visualization(
+            primitive=node_initial.list_paths[-1],
+            status=MotionPrimitiveStatus.IN_FRONTIER,
+            dict_node_status=dict_status_nodes,
+            path_fig=self.path_fig,
+            config=self.config_plot,
+            count=len(list_status_nodes),
+        )
+        list_status_nodes.append(copy.copy(dict_status_nodes))
+
+        start_time = time.perf_counter()
+        while not self.frontier.empty():
+            if SMP.batch_processing.timeout_config.use_sequential_processing:
+                if (
+                    time.perf_counter() - start_time
+                ) >= SMP.batch_processing.timeout_config.timeout:
+                    raise Exception("Time Out")
+            # pop the last node
+            node_current = self.frontier.pop()
+
+            # skip re-expanding a state we've (approximately) already
+            # expanded via a different primitive sequence
+            key_current = self._state_key(node_current.list_paths[-1][-1])
+            if key_current in self._closed_states:
+                continue
+            self._closed_states.add(key_current)
+
+            dict_status_nodes = update_visualization(
+                primitive=node_current.list_paths[-1],
+                status=MotionPrimitiveStatus.CURRENTLY_EXPLORED,
+                dict_node_status=dict_status_nodes,
+                path_fig=self.path_fig,
+                config=self.config_plot,
+                count=len(list_status_nodes),
+            )
+            list_status_nodes.append(copy.copy(dict_status_nodes))
+
+            # goal test
+            if self.reached_goal(node_current.list_paths[-1]):
+                path_solution = self.remove_states_behind_goal(node_current.list_paths)
+                list_status_nodes = self.plot_solution(
+                    path_solution=path_solution,
+                    node_status=dict_status_nodes,
+                    list_states_nodes=list_status_nodes,
+                )
+                # return solution
+                return path_solution, node_current.list_primitives, list_status_nodes
+
+            # check all possible successor primitives(i.e., actions) for current node
+            for primitive_successor in node_current.get_successors():
+
+                # translate/rotate motion primitive to current position
+                list_primitives_current = copy.copy(node_current.list_primitives)
+                path_translated = self.translate_primitive_to_current_state(
+                    primitive_successor, node_current.list_paths[-1]
+                )
+                # check for collision, if is not collision free it is skipped
+                if not self.is_collision_free(path_translated):
+                    list_status_nodes, dict_status_nodes = (
+                        self.plot_colliding_primitives(
+                            current_node=node_current,
+                            path_translated=path_translated,
+                            node_status=dict_status_nodes,
+                            list_states_nodes=list_status_nodes,
+                        )
+                    )
+                    continue
+
+                # skip children leading to an already-expanded state too -
+                # saves both frontier bloat and a wasted heuristic evaluation
+                key_child = self._state_key(path_translated[-1])
+                if key_child in self._closed_states:
+                    continue
+
+                list_primitives_current.append(primitive_successor)
+
+                path_new = node_current.list_paths + [
+                    [node_current.list_paths[-1][-1]] + path_translated
+                ]
+                node_child = PriorityNode(
+                    list_paths=path_new,
+                    list_primitives=list_primitives_current,
+                    depth_tree=node_current.depth_tree + 1,
+                    priority=node_current.priority,
+                )
+                f_child = self.evaluation_function(node_current=node_child)
+
+                # insert the child to the frontier:
+                dict_status_nodes = update_visualization(
+                    primitive=node_child.list_paths[-1],
+                    status=MotionPrimitiveStatus.IN_FRONTIER,
+                    dict_node_status=dict_status_nodes,
+                    path_fig=self.path_fig,
+                    config=self.config_plot,
+                    count=len(list_status_nodes),
+                )
+                list_status_nodes.append(copy.copy(dict_status_nodes))
+                self.frontier.insert(item=node_child, priority=f_child)
+
+            dict_status_nodes = update_visualization(
+                primitive=node_current.list_paths[-1],
+                status=MotionPrimitiveStatus.EXPLORED,
+                dict_node_status=dict_status_nodes,
+                path_fig=self.path_fig,
+                config=self.config_plot,
+                count=len(list_status_nodes),
+            )
+            list_status_nodes.append(copy.copy(dict_status_nodes))
+
+        return None, None, list_status_nodes
 
