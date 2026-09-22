@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from SMP.motion_planner.node import PriorityNode
 
@@ -32,6 +34,13 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
     DIST_VEL_NORM_CAP = 2.0
     COST_TIME_NORM_CAP = 2.0
 
+    # TEMPORARY diagnostic switch: set True to print "nodes evaluated / sec"
+    # every DEBUG_LOG_EVERY_N heuristic calls, to tell apart "too slow per
+    # node" from "search never converges / explodes in branching". Flip back
+    # to False before a real/graded batch run - it's not needed otherwise.
+    DEBUG_LOG_PROGRESS = True
+    DEBUG_LOG_EVERY_N = 2000
+
     def __init__(
         self, scenario, planningProblem, automata, plot_config=DefaultPlotConfig
     ):
@@ -44,12 +53,26 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         # instance copy so a tuning script can do `planner.weights = ...`
         # without mutating the class-level default for other instances
         self.weights = np.array(self.DEFAULT_WEIGHTS, dtype=float)
+        self._num_heuristic_calls = 0
+        self._search_start_time = None
 
     def evaluation_function(self, node_current: PriorityNode) -> float:
         node_current.priority = self.heuristic_function(node_current=node_current)
         return node_current.priority
 
     def heuristic_function(self, node_current: PriorityNode) -> float:
+        if self.DEBUG_LOG_PROGRESS:
+            if self._search_start_time is None:
+                self._search_start_time = time.perf_counter()
+            self._num_heuristic_calls += 1
+            if self._num_heuristic_calls % self.DEBUG_LOG_EVERY_N == 0:
+                elapsed = time.perf_counter() - self._search_start_time
+                print(
+                    f"[{self.scenario.scenario_id}] {self._num_heuristic_calls} nodes "
+                    f"evaluated in {elapsed:.1f}s ({self._num_heuristic_calls / elapsed:.0f} nodes/s), "
+                    f"depth of current node: {node_current.depth_tree}"
+                )
+
         path_last = node_current.list_paths[-1]
         initial_state = node_current.list_paths[0][0]
 
@@ -70,17 +93,7 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         # regressing node can't dominate the weighted sum
         dist_manhattan_norm = min(dist_manhattan_norm, self.DIST_MANHATTAN_NORM_CAP)
 
-        # find_lanelet_by_position([pos]) returns a list PER QUERIED POSITION
-        # (we query one), so [0] gets that position's list of candidate
-        # lanelet ids - it can be empty if the state isn't inside any lanelet.
-        # A point can geometrically lie in more than one lanelet at once
-        # (junctions, parallel/opposite lanes) with NO guaranteed ordering, so
-        # we still filter by orientation and prefer a reachable one via
-        # lanelets_of_position() - skipping that (i.e. just taking [0] of the
-        # raw geometric hits) previously made the search hard-discard (np.inf)
-        # perfectly good nodes whenever the "wrong" overlapping lanelet (e.g.
-        # opposite direction) happened to come first, causing far more search
-        # effort / timeouts than necessary.
+
         final_lanelet_ids = self.lanelets_of_position(
             self.scenario.lanelet_network.find_lanelet_by_position(
                 [path_last[-1].position]
