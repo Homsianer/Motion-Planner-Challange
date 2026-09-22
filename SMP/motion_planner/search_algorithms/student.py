@@ -22,6 +22,8 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
             plot_config=plot_config,
         )
 
+
+
     def evaluation_function(self, node_current: PriorityNode) -> float:
         node_current.priority = self.heuristic_function(node_current=node_current)
         return node_current.priority
@@ -46,21 +48,20 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         dist_manhattan_start = self.calc_heuristic_distance(
             initial_state, distance_type=1
         )
-        if dist_manhattan_start:
-            dist_manhattan_norm = dist_manhattan / dist_manhattan_start
-        else:
-            dist_manhattan_norm = dist_manhattan
+        dist_manhattan_norm = dist_manhattan / dist_manhattan_start if dist_manhattan_start else dist_manhattan
 
-        cost_lanelet, final_lanelet_id, start_lanelet_id = self.calc_heuristic_lanelet(
-            path_last
+        final_lanelet_id = self.scenario.lanelet_network.find_lanelet_by_position(
+            [path_last[-1].position]
         )
-        if cost_lanelet is None or final_lanelet_id[0] is None:
+
+        if final_lanelet_id[0] is None:
             return np.inf
 
         # hard discard if the goal lanelet cannot be reached from here
         cost_lanelet_graph = self.dict_lanelets_costs[final_lanelet_id[0]]
         if cost_lanelet_graph == -1:
             return np.inf
+
         # normalize by the number of lanelets in the map as a rough upper bound
         num_lanelets = len(self.scenario.lanelet_network.lanelets)
         cost_lanelet_graph_norm = (
@@ -93,14 +94,14 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
             time_goal_max = self.planningProblem.goal.state_list[0].time_step.end
         else:
             time_goal_max = None
-        cost_time_norm = cost_time / time_goal_max if time_goal_max else cost_time
+        cost_time_norm = cost_time / time_goal_max if time_goal_max else cost_time #im else falls ggf nicht gut genormt
 
         if hasattr(self.planningProblem.goal.state_list[0], "velocity"):
             # target the upper bound of the goal's velocity interval: going
             # faster (up to the allowed max) is cheaper than going slower
             v_max_goal = self.planningProblem.goal.state_list[0].velocity.end
             dist_vel = abs(path_last[-1].velocity - v_max_goal)
-            dist_vel_norm = dist_vel / v_max_goal if v_max_goal else dist_vel
+            dist_vel_norm = dist_vel / v_max_goal if v_max_goal else dist_vel ##im else falls ggf nicht gut genormt
         else:
             dist_vel_norm = 0
 
@@ -124,3 +125,4 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         if cost < 0:
             cost = 0
         return cost
+
