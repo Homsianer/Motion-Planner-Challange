@@ -73,9 +73,20 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         # find_lanelet_by_position([pos]) returns a list PER QUERIED POSITION
         # (we query one), so [0] gets that position's list of candidate
         # lanelet ids - it can be empty if the state isn't inside any lanelet.
-        final_lanelet_ids = self.scenario.lanelet_network.find_lanelet_by_position(
-            [path_last[-1].position]
-        )[0]
+        # A point can geometrically lie in more than one lanelet at once
+        # (junctions, parallel/opposite lanes) with NO guaranteed ordering, so
+        # we still filter by orientation and prefer a reachable one via
+        # lanelets_of_position() - skipping that (i.e. just taking [0] of the
+        # raw geometric hits) previously made the search hard-discard (np.inf)
+        # perfectly good nodes whenever the "wrong" overlapping lanelet (e.g.
+        # opposite direction) happened to come first, causing far more search
+        # effort / timeouts than necessary.
+        final_lanelet_ids = self.lanelets_of_position(
+            self.scenario.lanelet_network.find_lanelet_by_position(
+                [path_last[-1].position]
+            )[0],
+            path_last[-1],
+        )
 
         if not final_lanelet_ids:
             return np.inf
