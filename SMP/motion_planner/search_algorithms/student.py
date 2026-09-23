@@ -327,15 +327,16 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
         f_initial = self.evaluation_function(node_initial)
         self.frontier.insert(item=node_initial, priority=f_initial)
 
-        dict_status_nodes = update_visualization(
-            primitive=node_initial.list_paths[-1],
-            status=MotionPrimitiveStatus.IN_FRONTIER,
-            dict_node_status=dict_status_nodes,
-            path_fig=self.path_fig,
-            config=self.config_plot,
-            count=len(list_status_nodes),
-        )
-        list_status_nodes.append(copy.copy(dict_status_nodes))
+        if self.config_plot.DO_PLOT:
+            dict_status_nodes = update_visualization(
+                primitive=node_initial.list_paths[-1],
+                status=MotionPrimitiveStatus.IN_FRONTIER,
+                dict_node_status=dict_status_nodes,
+                path_fig=self.path_fig,
+                config=self.config_plot,
+                count=len(list_status_nodes),
+            )
+            list_status_nodes.append(copy.copy(dict_status_nodes))
 
         start_time = time.perf_counter()
         while not self.frontier.empty():
@@ -354,15 +355,16 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
                 continue
             self._closed_states.add(key_current)
 
-            dict_status_nodes = update_visualization(
-                primitive=node_current.list_paths[-1],
-                status=MotionPrimitiveStatus.CURRENTLY_EXPLORED,
-                dict_node_status=dict_status_nodes,
-                path_fig=self.path_fig,
-                config=self.config_plot,
-                count=len(list_status_nodes),
-            )
-            list_status_nodes.append(copy.copy(dict_status_nodes))
+            if self.config_plot.DO_PLOT:
+                dict_status_nodes = update_visualization(
+                    primitive=node_current.list_paths[-1],
+                    status=MotionPrimitiveStatus.CURRENTLY_EXPLORED,
+                    dict_node_status=dict_status_nodes,
+                    path_fig=self.path_fig,
+                    config=self.config_plot,
+                    count=len(list_status_nodes),
+                )
+                list_status_nodes.append(copy.copy(dict_status_nodes))
 
             # goal test
             if self.reached_goal(node_current.list_paths[-1]):
@@ -385,14 +387,15 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
                 )
                 # check for collision, if is not collision free it is skipped
                 if not self.is_collision_free(path_translated):
-                    list_status_nodes, dict_status_nodes = (
-                        self.plot_colliding_primitives(
-                            current_node=node_current,
-                            path_translated=path_translated,
-                            node_status=dict_status_nodes,
-                            list_states_nodes=list_status_nodes,
+                    if self.config_plot.DO_PLOT:
+                        list_status_nodes, dict_status_nodes = (
+                            self.plot_colliding_primitives(
+                                current_node=node_current,
+                                path_translated=path_translated,
+                                node_status=dict_status_nodes,
+                                list_states_nodes=list_status_nodes,
+                            )
                         )
-                    )
                     continue
 
                 # skip children leading to an already-expanded state too -
@@ -415,26 +418,28 @@ class StudentMotionPlanner(GreedyBestFirstSearch):
                 f_child = self.evaluation_function(node_current=node_child)
 
                 # insert the child to the frontier:
+                if self.config_plot.DO_PLOT:
+                    dict_status_nodes = update_visualization(
+                        primitive=node_child.list_paths[-1],
+                        status=MotionPrimitiveStatus.IN_FRONTIER,
+                        dict_node_status=dict_status_nodes,
+                        path_fig=self.path_fig,
+                        config=self.config_plot,
+                        count=len(list_status_nodes),
+                    )
+                    list_status_nodes.append(copy.copy(dict_status_nodes))
+                self.frontier.insert(item=node_child, priority=f_child)
+
+            if self.config_plot.DO_PLOT:
                 dict_status_nodes = update_visualization(
-                    primitive=node_child.list_paths[-1],
-                    status=MotionPrimitiveStatus.IN_FRONTIER,
+                    primitive=node_current.list_paths[-1],
+                    status=MotionPrimitiveStatus.EXPLORED,
                     dict_node_status=dict_status_nodes,
                     path_fig=self.path_fig,
                     config=self.config_plot,
                     count=len(list_status_nodes),
                 )
                 list_status_nodes.append(copy.copy(dict_status_nodes))
-                self.frontier.insert(item=node_child, priority=f_child)
-
-            dict_status_nodes = update_visualization(
-                primitive=node_current.list_paths[-1],
-                status=MotionPrimitiveStatus.EXPLORED,
-                dict_node_status=dict_status_nodes,
-                path_fig=self.path_fig,
-                config=self.config_plot,
-                count=len(list_status_nodes),
-            )
-            list_status_nodes.append(copy.copy(dict_status_nodes))
 
         return None, None, list_status_nodes
 
