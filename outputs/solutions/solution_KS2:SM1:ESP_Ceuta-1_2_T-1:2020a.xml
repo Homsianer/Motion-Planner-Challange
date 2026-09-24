@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<CommonRoadSolution benchmark_id="KS2:SM1:ESP_Ceuta-1_2_T-1:2020a" computation_time="1.6432235499999024" date="2026-09-15T22:01:18">
+<CommonRoadSolution benchmark_id="KS2:SM1:ESP_Ceuta-1_2_T-1:2020a" computation_time="0.4867817389895208" date="2026-09-24T20:04:13">
   <ksTrajectory planningProblem="1">
     <ksState>
       <x>322.6044</x>
@@ -210,67 +210,67 @@
       <time>25</time>
     </ksState>
     <ksState>
-      <x>331.1379205619729</x>
-      <y>-18.809747548005674</y>
-      <steeringAngle>-0.03553333333333333</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-0.5185941350028388</orientation>
+      <x>331.1076633553119</x>
+      <y>-18.782011294125493</y>
+      <steeringAngle>0.0</steeringAngle>
+      <velocity>7.200000000000001</velocity>
+      <orientation>-0.5130816</orientation>
       <time>26</time>
     </ksState>
     <ksState>
-      <x>331.81795048047553</x>
-      <y>-19.231724305636806</y>
-      <steeringAngle>-0.07106666666666667</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-0.5351456558831085</orientation>
+      <x>331.7001038338253</x>
+      <y>-19.11579906806269</y>
+      <steeringAngle>0.0</steeringAngle>
+      <velocity>6.400000000000001</velocity>
+      <orientation>-0.5130816</orientation>
       <time>27</time>
     </ksState>
     <ksState>
-      <x>332.48025519748376</x>
-      <y>-19.682056210404294</y>
-      <steeringAngle>-0.10659999999999997</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-0.5627781351738034</orientation>
+      <x>332.22284543232695</x>
+      <y>-19.41031769201972</y>
+      <steeringAngle>0.0</steeringAngle>
+      <velocity>5.600000000000001</velocity>
+      <orientation>-0.5130816</orientation>
       <time>28</time>
     </ksState>
     <ksState>
-      <x>333.11850318841334</x>
-      <y>-20.16736136804016</y>
-      <steeringAngle>-0.1421333333333333</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-0.6015619874465383</orientation>
+      <x>332.675888150866</x>
+      <y>-19.665567166024356</y>
+      <steeringAngle>0.0</steeringAngle>
+      <velocity>4.800000000000001</velocity>
+      <orientation>-0.5130816</orientation>
       <time>29</time>
     </ksState>
     <ksState>
-      <x>333.7251706149564</x>
-      <y>-20.693460208950228</y>
-      <steeringAngle>-0.17766666666666667</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-0.651596799695693</orientation>
+      <x>333.0592319894606</x>
+      <y>-19.881547490086774</y>
+      <steeringAngle>0.0</steeringAngle>
+      <velocity>4.000000000000001</velocity>
+      <orientation>-0.5130816</orientation>
       <time>30</time>
     </ksState>
     <ksState>
-      <x>334.2754704187109</x>
-      <y>-21.221989789868918</y>
-      <steeringAngle>-0.1421333333333334</steeringAngle>
-      <velocity>7.2</velocity>
-      <orientation>-0.6992241214413298</orientation>
+      <x>333.44257582996977</x>
+      <y>-20.09752781522787</y>
+      <steeringAngle>0.0</steeringAngle>
+      <velocity>4.8</velocity>
+      <orientation>-0.5130816</orientation>
       <time>31</time>
     </ksState>
     <ksState>
-      <x>334.7573584129484</x>
-      <y>-21.704073245466553</y>
-      <steeringAngle>-0.10660000000000011</steeringAngle>
-      <velocity>6.4</velocity>
-      <orientation>-0.7322836918892979</orientation>
+      <x>333.8956185504481</x>
+      <y>-20.3527772903251</y>
+      <steeringAngle>0.0</steeringAngle>
+      <velocity>5.6</velocity>
+      <orientation>-0.5130816</orientation>
       <time>32</time>
     </ksState>
     <ksState>
-      <x>335.17903052612905</x>
-      <y>-22.131953293623447</y>
-      <steeringAngle>-0.07106666666666674</steeringAngle>
-      <velocity>5.600000000000001</velocity>
-      <orientation>-0.7531006401831863</orientation>
+      <x>334.41836015088165</x>
+      <y>-20.64729591537062</y>
+      <steeringAngle>0.0</steeringAngle>
+      <velocity>6.4</velocity>
+      <orientation>-0.5130816</orientation>
       <time>33</time>
     </ksState>
   </ksTrajectory>
