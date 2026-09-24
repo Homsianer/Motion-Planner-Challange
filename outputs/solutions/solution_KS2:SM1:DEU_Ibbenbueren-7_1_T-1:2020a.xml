@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<CommonRoadSolution benchmark_id="KS2:SM1:DEU_Ibbenbueren-7_1_T-1:2020a" computation_time="1.4416527670000505" date="2026-09-15T22:01:18">
+<CommonRoadSolution benchmark_id="KS2:SM1:DEU_Ibbenbueren-7_1_T-1:2020a" computation_time="0.9922903939950629" date="2026-09-23T11:07:23">
   <ksTrajectory planningProblem="1">
     <ksState>
       <x>640.29784</x>
@@ -50,227 +50,227 @@
       <time>5</time>
     </ksState>
     <ksState>
-      <x>638.232450999013</x>
-      <y>-934.6831319595973</y>
+      <x>638.1983080165577</x>
+      <y>-934.6622870625213</y>
       <steeringAngle>-0.035533333333333326</steeringAngle>
-      <velocity>4.0</velocity>
-      <orientation>-3.6769519745326003</orientation>
+      <velocity>4.799999999999999</velocity>
+      <orientation>-3.6773194786691907</orientation>
       <time>6</time>
     </ksState>
     <ksState>
-      <x>637.8952189279614</x>
-      <y>-934.4677070378726</y>
-      <steeringAngle>-0.07106666666666711</steeringAngle>
-      <velocity>4.0</velocity>
-      <orientation>-3.6852277350758857</orientation>
+      <x>637.7604020088795</x>
+      <y>-934.3814590835194</y>
+      <steeringAngle>-0.07106666666666667</steeringAngle>
+      <velocity>5.599999999999998</velocity>
+      <orientation>-3.6881700897303635</orientation>
       <time>7</time>
     </ksState>
     <ksState>
-      <x>637.5645119008811</x>
-      <y>-934.2418544214937</y>
-      <steeringAngle>-0.10660000000000043</steeringAngle>
-      <velocity>4.0</velocity>
-      <orientation>-3.6990439748950226</orientation>
+      <x>637.2665358832966</x>
+      <y>-934.0395005476495</y>
+      <steeringAngle>-0.10659999999999999</steeringAngle>
+      <velocity>6.3999999999999995</velocity>
+      <orientation>-3.7089870387306916</orientation>
       <time>8</time>
     </ksState>
     <ksState>
-      <x>637.241863688464</x>
-      <y>-934.0038545170121</y>
-      <steeringAngle>-0.14213333333333378</steeringAngle>
-      <velocity>4.0</velocity>
-      <orientation>-3.7184359012805683</orientation>
+      <x>636.7248660119996</x>
+      <y>-933.6258426495557</y>
+      <steeringAngle>-0.14213333333333333</steeringAngle>
+      <velocity>7.199999999999999</velocity>
+      <orientation>-3.7420466097118568</orientation>
       <time>9</time>
     </ksState>
     <ksState>
-      <x>636.9290299205078</x>
-      <y>-933.7521005972765</y>
-      <steeringAngle>-0.1776666666666672</steeringAngle>
-      <velocity>4.0</velocity>
-      <orientation>-3.743453307731966</orientation>
+      <x>636.1474719513886</x>
+      <y>-933.1272394675714</y>
+      <steeringAngle>-0.17766666666666664</steeringAngle>
+      <velocity>7.9999999999999964</velocity>
+      <orientation>-3.7896739317934034</orientation>
       <time>10</time>
     </ksState>
     <ksState>
-      <x>636.5954411487442</x>
-      <y>-933.4619231444271</y>
+      <x>635.600997593792</x>
+      <y>-932.5938564710707</y>
       <steeringAngle>-0.17766666666666667</steeringAngle>
-      <velocity>4.800000000000002</velocity>
-      <orientation>-3.7740888447743</orientation>
+      <velocity>7.2</velocity>
+      <orientation>-3.8425898592377807</orientation>
       <time>11</time>
     </ksState>
     <ksState>
-      <x>636.2128849796771</x>
-      <y>-933.1060098562654</y>
+      <x>635.136564619467</x>
+      <y>-932.0927056760694</y>
       <steeringAngle>-0.17766666666666667</steeringAngle>
-      <velocity>5.600000000000001</velocity>
-      <orientation>-3.81029447945084</orientation>
+      <velocity>6.4</velocity>
+      <orientation>-3.889935689030592</orientation>
       <time>12</time>
     </ksState>
     <ksState>
-      <x>635.7878254318607</x>
-      <y>-932.6784539650425</y>
+      <x>634.7468674400117</x>
+      <y>-931.6326885451456</y>
       <steeringAngle>-0.17766666666666667</steeringAngle>
-      <velocity>6.3999999999999995</velocity>
-      <orientation>-3.85207021176048</orientation>
+      <velocity>5.599999999999999</velocity>
+      <orientation>-3.931711421185777</orientation>
       <time>13</time>
     </ksState>
     <ksState>
-      <x>635.3281643628274</x>
-      <y>-932.1729227431705</y>
+      <x>634.4249216986378</x>
+      <y>-931.2211372944778</y>
       <steeringAngle>-0.17766666666666667</steeringAngle>
-      <velocity>7.200000000000002</velocity>
-      <orientation>-3.899416041702577</orientation>
+      <velocity>4.799999999999999</velocity>
+      <orientation>-3.967917055707291</orientation>
       <time>14</time>
     </ksState>
     <ksState>
-      <x>634.8433945659177</x>
-      <y>-931.5828974075449</y>
+      <x>634.1642902237463</x>
+      <y>-930.863987943657</y>
       <steeringAngle>-0.17766666666666667</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-3.952331969276727</orientation>
+      <velocity>4.0</velocity>
+      <orientation>-3.998552592596621</orientation>
       <time>15</time>
     </ksState>
     <ksState>
-      <x>634.3603169894094</x>
-      <y>-930.9412775164606</y>
-      <steeringAngle>-0.14213333333333336</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-4.002366780825476</orientation>
+      <x>633.9108142269004</x>
+      <y>-930.5022174927033</y>
+      <steeringAngle>-0.14213333333333333</steeringAngle>
+      <velocity>4.8000000000000025</velocity>
+      <orientation>-4.025977492314974</orientation>
       <time>16</time>
     </ksState>
     <ksState>
-      <x>633.8938373317557</x>
-      <y>-930.2890175694131</y>
-      <steeringAngle>-0.1066000000000001</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-4.041150632832473</orientation>
+      <x>633.6145100629143</x>
+      <y>-930.0733947568706</y>
+      <steeringAngle>-0.10660000000000003</steeringAngle>
+      <velocity>5.600000000000005</velocity>
+      <orientation>-4.0510937045938915</orientation>
       <time>17</time>
     </ksState>
     <ksState>
-      <x>633.4366949729638</x>
-      <y>-929.6313066161175</y>
-      <steeringAngle>-0.07106666666666674</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-4.068783111862159</orientation>
+      <x>633.274618013851</x>
+      <y>-929.5780699831889</y>
+      <steeringAngle>-0.07106666666666671</steeringAngle>
+      <velocity>6.400000000000004</velocity>
+      <orientation>-4.071725474193351</orientation>
       <time>18</time>
     </ksState>
     <ksState>
-      <x>632.9814923110982</x>
-      <y>-928.9730019559803</y>
-      <steeringAngle>-0.035533333333333354</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-4.085334632491189</orientation>
+      <x>632.8884393343509</x>
+      <y>-929.0180029985981</y>
+      <steeringAngle>-0.035533333333333375</steeringAngle>
+      <velocity>7.200000000000006</velocity>
+      <orientation>-4.085702142286143</orientation>
       <time>19</time>
     </ksState>
     <ksState>
-      <x>632.5208306734236</x>
-      <y>-928.3188902217406</y>
-      <steeringAngle>-2.0816681711721685e-17</steeringAngle>
-      <velocity>8.0</velocity>
-      <orientation>-4.090847158949594</orientation>
+      <x>632.4507901617192</x>
+      <y>-928.3966133156146</y>
+      <steeringAngle>-2.6346112791397758e-17</steeringAngle>
+      <velocity>8.000000000000007</velocity>
+      <orientation>-4.0908471550657115</orientation>
       <time>20</time>
     </ksState>
     <ksState>
-      <x>632.0625842471821</x>
-      <y>-927.6631018503831</y>
+      <x>631.9925437329306</x>
+      <y>-927.7408249460367</y>
       <steeringAngle>-0.03553333333333333</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.096359693952433</orientation>
+      <orientation>-4.09635969006855</orientation>
       <time>21</time>
     </ksState>
     <ksState>
-      <x>631.6244961493577</x>
-      <y>-926.9933377929837</y>
+      <x>631.554455632505</x>
+      <y>-927.0710608903388</y>
       <steeringAngle>-0.07106666666666667</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.112911214832702</orientation>
+      <orientation>-4.11291121094882</orientation>
       <time>22</time>
     </ksState>
     <ksState>
-      <x>631.2144530398983</x>
-      <y>-926.3053617679597</y>
+      <x>631.1444125203736</x>
+      <y>-926.3830848669074</y>
       <steeringAngle>-0.10659999999999997</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.140543694123397</orientation>
+      <orientation>-4.1405436902395145</orientation>
       <time>23</time>
     </ksState>
     <ksState>
-      <x>630.8409896314826</x>
-      <y>-925.5958501919242</y>
+      <x>630.7709491092022</x>
+      <y>-925.6735732923225</y>
       <steeringAngle>-0.1421333333333333</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.179327546396133</orientation>
+      <orientation>-4.17932754251225</orientation>
       <time>24</time>
     </ksState>
     <ksState>
-      <x>630.5133843233991</x>
-      <y>-924.8627061958698</y>
+      <x>630.4433437982714</x>
+      <y>-924.9404292975403</y>
       <steeringAngle>-0.17766666666666667</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.229362358645287</orientation>
+      <orientation>-4.229362354761404</orientation>
       <time>25</time>
     </ksState>
     <ksState>
-      <x>630.2242089365936</x>
-      <y>-924.1134281265083</y>
+      <x>630.1541684085556</x>
+      <y>-924.191151229302</y>
       <steeringAngle>-0.14213333333333336</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.279397170194035</orientation>
+      <orientation>-4.279397166310153</orientation>
       <time>26</time>
     </ksState>
     <ksState>
-      <x>629.9539086813518</x>
-      <y>-923.3584552253102</y>
+      <x>629.8838681503817</x>
+      <y>-923.4361783291537</y>
       <steeringAngle>-0.1066000000000001</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.318181022201033</orientation>
+      <orientation>-4.3181810183171505</orientation>
       <time>27</time>
     </ksState>
     <ksState>
-      <x>629.6940805640016</x>
-      <y>-922.6007929102112</y>
+      <x>629.6240400300888</x>
+      <y>-922.6785160150639</y>
       <steeringAngle>-0.07106666666666674</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.34581350123072</orientation>
+      <orientation>-4.345813497346837</orientation>
       <time>28</time>
     </ksState>
     <ksState>
-      <x>629.4362805656604</x>
-      <y>-921.8430900332318</y>
+      <x>629.3662400288047</x>
+      <y>-921.9208131390857</y>
       <steeringAngle>-0.035533333333333354</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.362365021859749</orientation>
+      <orientation>-4.362365017975867</orientation>
       <time>29</time>
     </ksState>
     <ksState>
-      <x>629.1720829648394</x>
-      <y>-921.0879271812485</y>
+      <x>629.1020424250509</x>
+      <y>-921.1656502881285</y>
       <steeringAngle>-2.0816681711721685e-17</steeringAngle>
       <velocity>8.0</velocity>
-      <orientation>-4.367877548318154</orientation>
+      <orientation>-4.367877544434271</orientation>
       <time>30</time>
     </ksState>
     <ksState>
-      <x>628.9235158312325</x>
-      <y>-920.369695395133</y>
+      <x>628.8406265062728</x>
+      <y>-920.4095352885547</y>
       <steeringAngle>-0.03553333333333333</steeringAngle>
-      <velocity>7.199999999999999</velocity>
-      <orientation>-4.373022561300646</orientation>
+      <velocity>8.0</velocity>
+      <orientation>-4.37339007943711</orientation>
       <time>31</time>
     </ksState>
     <ksState>
-      <x>628.7199326418456</x>
-      <y>-919.7206032908739</y>
-      <steeringAngle>-0.07106666666666664</steeringAngle>
-      <velocity>6.400000000000001</velocity>
-      <orientation>-4.386999233421609</orientation>
+      <x>628.6024226732322</x>
+      <y>-919.645490782021</y>
+      <steeringAngle>-0.07106666666666667</steeringAngle>
+      <velocity>8.0</velocity>
+      <orientation>-4.389941600317379</orientation>
       <time>32</time>
     </ksState>
     <ksState>
-      <x>628.5615159119768</x>
-      <y>-919.1411824597125</y>
+      <x>628.3961755072796</x>
+      <y>-918.8715990136454</y>
       <steeringAngle>-0.10659999999999997</steeringAngle>
-      <velocity>5.600000000000004</velocity>
-      <orientation>-4.40763100128749</orientation>
+      <velocity>8.0</velocity>
+      <orientation>-4.417574079608074</orientation>
       <time>33</time>
     </ksState>
   </ksTrajectory>
